@@ -1,0 +1,149 @@
+<!doctype html>
+<!--
+  講義頁樣板。使用方式見 CLAUDE.md〈新增一講的步驟〉。
+  1. 複製到 lectures/lecture-NN.html（NN 為兩位數）
+  2. 取代所有 {{...}}，刪掉用不到的「可選」區塊
+  3. 區塊順序不可更動；class 名稱不可自創
+  範例成品：lectures/lecture-04.html
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L{{NN}} {{英文標題}}｜CDA 讀講義筆記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&family=Noto+Serif+TC:wght@700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page wide">
+
+  <!-- ===== 1. 頁首（必要） ===== -->
+  <header class="lecture-head narrow">
+    <span class="hanko">第{{國字講次}}講</span>
+    <div class="head-text">
+      <nav class="crumbs"><a href="../index.html">CDA 讀講義筆記</a><span>／</span><span>Lecture {{NN}}</span></nav>
+      <h1>{{英文標題}}<br><span class="en">{{中文標題}}</span></h1>
+      <div class="lecture-meta">
+        <span class="ref"><b>講義</b> L{{NN}} p.1–{{總頁數}}</span>
+        <span class="ref"><b>課本</b> Ch.{{章}} p.{{起}}–{{迄}}</span>
+        <span class="ref"><b>資料</b> {{本講用到的資料集}}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 2. 這講在解決什麼問題（必要） ===== -->
+  <section class="big-picture narrow" id="big-picture">
+    <span class="label">這講在解決什麼問題</span>
+    <div class="chain">
+      <span>L{{NN-1}} {{上一講一句話}}</span><i>→</i>
+      <span class="now">L{{NN}} {{本講一句話}}</span><i>→</i>
+      <span>L{{NN+1}} {{下一講一句話}}</span>
+    </div>
+    <p>{{上一講留下了什麼做不到的事？本講要回答的核心問題（用粗體）}}</p>
+    <p>{{本講可以濃縮成哪 2–3 件事}}</p>
+  </section>
+
+  <!-- ===== 3. 概念地圖（必要） ===== -->
+  <section id="map" class="narrow">
+    <h2 class="section-title">概念地圖</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>概念</th><th>它在解決什麼問題</th><th>講義</th><th>課本</th></tr></thead>
+        <tbody>
+          <tr><td class="num"><a href="#c{{N}}-1">{{N}}-1</a></td><td>{{概念}}</td><td>{{一句話}}</td><td class="num">p.{{}}</td><td class="num">p.{{}}</td></tr>
+          <!-- 每張概念卡一列，順序與下方一致 -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== 4. 逐頁筆記（必要） ===== -->
+  <h2 class="section-title narrow">逐頁筆記</h2>
+
+  <!-- 見開き：每 1–6 頁講義一個，全部頁碼都要出現、不可重複 -->
+  <section class="spread" id="s{{N}}-1">
+    <div class="spread-head"><span class="pages">p.{{起}}–{{迄}}</span><span class="section-name">{{講義小節標題（英文原文）}}</span></div>
+    <div class="sheet">
+      <!-- 每頁一個 figure，依頁碼排序；寬高用實際圖檔尺寸；不要加 loading="lazy" -->
+      <figure><a href="../lecture-pages/L{{NN}}/p{{頁碼兩位數}}.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L{{NN}}/p{{頁碼兩位數}}.jpg" alt="講義 L{{NN}} 第 {{頁碼}} 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.{{頁碼}}</figcaption></figure>
+    </div>
+    <div class="notes">
+
+      <!-- 概念卡：每個見開き 1–2 張 -->
+      <article class="concept" id="c{{N}}-1">
+        <div class="concept-head">
+          <span class="concept-id">{{N}}-1</span>
+          <h3>{{用問句或「X：Y」寫的標題}}</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.{{}}</span><span class="ref"><b>課本</b> §{{}} p.{{}}</span></div>
+        </div>
+
+        <!-- 必要：為什麼要這樣做 -->
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>{{不這樣做會出什麼問題 → 這個方法怎麼解決}}</p>
+          <p class="analogy">{{一個生活類比}}</p>
+        </div>
+
+        <!-- 可選：公式 -->
+        <div class="formula">
+          {{公式，符號與講義一致}}
+          <span class="note">{{符號或尺度說明}}</span>
+        </div>
+
+        <!-- 必要：什麼時候用 -->
+        <div class="block when">
+          <span class="label">什麼時候用</span>
+          <ul><li>{{情境}}</li></ul>
+        </div>
+
+        <!-- 可選：R 程式／輸出 + 怎麼讀（有輸出就必須成對） -->
+        <div class="r-block">
+          <div class="r-title">R · {{這段在做什麼}}（p.{{}}）</div>
+<pre>{{程式或輸出，關鍵數字用 <mark data-n="1">數字</mark> 標記}}</pre>
+        </div>
+        <div class="block when">
+          <span class="label">R 輸出怎麼讀</span>
+          <ul class="r-read">
+            <li><b>1</b><span>{{對應 data-n="1" 的解讀}}</span></li>
+          </ul>
+        </div>
+
+        <!-- 可選：學派與爭議 -->
+        <div class="block debate">
+          <span class="label">學派與爭議</span>
+          <p>{{兩種做法各自的立場，以及課本或講義站在哪一邊}}</p>
+        </div>
+
+        <!-- 可選：常見陷阱 -->
+        <div class="block trap">
+          <span class="label">常見陷阱</span>
+          <ul><li>{{}}</li></ul>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ===== 5. 自我檢查（必要，3–5 題） ===== -->
+  <section id="quiz" class="narrow">
+    <h2 class="section-title">自我檢查</h2>
+    <div class="quiz">
+      <details>
+        <summary>Q1. {{題目，優先考「為什麼」與「解讀」}}</summary>
+        <div class="answer"><p>{{答案，結尾註明（見 X-Y）}}</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 6. 上下頁（必要）：頁面存在用 <a>，不存在用 <span class="off"> ===== -->
+  <nav class="pager narrow">
+    <span class="off">← L{{NN-1}} {{標題}}（尚未建立）</span>
+    <span class="off">L{{NN+1}} {{標題}}（尚未建立）→</span>
+  </nav>
+  <footer class="site-foot narrow">個人學習筆記，解說內容以自己的話重新整理。講義原頁版權屬授課教師所有，僅在本機顯示，未公開散布。課本：Agresti (2019) <i>An Introduction to Categorical Data Analysis</i>, 3rd ed.</footer>
+</main>
+<!-- 必要：負責講義圖偵測與互動元件 -->
+<script src="../assets/cda.js"></script>
+</body>
+</html>

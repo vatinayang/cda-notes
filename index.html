@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CDA 讀講義筆記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&family=Noto+Serif+TC:wght@700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<main class="page">
+
+  <header class="hero">
+    <span class="kicker">一一五學年度 上學期 ・ 類別資料分析</span>
+    <h1>CDA 讀講義筆記</h1>
+    <p>攤開老師的講義，在旁邊寫下自己的筆記。左邊是講義原頁，右邊是解說，每個概念都回答三個問題：為什麼要這樣做、什麼時候用、R 輸出怎麼讀。</p>
+  </header>
+
+  <section id="lectures">
+    <h2 class="section-title">目次</h2>
+    <!-- LECTURE-LIST：新增講義頁時，把對應那一列從 span.disabled 改成 a，並把狀態改成「已完成」 -->
+    <ul class="lecture-list">
+      <li><span class="disabled"><span class="no">第一講</span><span class="t"><span>Introduction</span><small>類別資料、二項分配、比例的推論 ・ 課本 Ch.1</small></span><span class="status">準備中</span></span></li>
+      <li><span class="disabled"><span class="no">第二講</span><span class="t"><span>Analyzing Contingency Tables</span><small>RR、odds ratio、卡方檢定、三維表 ・ 課本 Ch.2</small></span><span class="status">準備中</span></span></li>
+      <li><span class="disabled"><span class="no">第三講</span><span class="t"><span>Generalized Linear Models</span><small>GLM 三個組成、deviance、模型比較 ・ 課本 Ch.3</small></span><span class="status">準備中</span></span></li>
+      <li><a href="lectures/lecture-04.html"><span class="no">第四講</span><span class="t"><span>Logistic Regression</span><small>logit、β 的解讀、類別型 X、交互作用、ROC ・ 課本 Ch.4</small></span><span class="status done">已完成</span></a></li>
+      <li><span class="disabled"><span class="no">第五講</span><span class="t"><span>Building and Applying Logistic Models</span><small>模型檢查、殘差、變數選擇、稀疏資料 ・ 課本 Ch.5</small></span><span class="status">準備中</span></span></li>
+    </ul>
+  </section>
+
+  <section id="how-to-read">
+    <h2 class="section-title">讀法</h2>
+    <p>每講先說明「這講在解決什麼問題」，再用概念地圖列出全部概念。接著逐頁對照：左邊是講義原頁，右邊是那幾頁的筆記。筆記用四種顏色區分：</p>
+    <div class="legend">
+      <div class="block why"><span class="label">為什麼要這樣做</span><p>這個方法在解決什麼問題，附一個類比。</p></div>
+      <div class="block when"><span class="label">什麼時候用・R 輸出怎麼讀</span><p>適用情境，以及 R 輸出逐行對照。</p></div>
+      <div class="block debate"><span class="label">學派與爭議</span><p>方法之間的取捨，以及課本或老師的立場。</p></div>
+      <div class="block trap"><span class="label">常見陷阱</span><p>最容易解讀錯的地方。</p></div>
+    </div>
+    <p class="small">講義原頁版權屬授課教師所有，只在本機瀏覽時顯示；公開網站上僅顯示頁碼，請對照紙本講義。</p>
+  </section>
+
+  <footer class="site-foot">個人學習筆記。課本：Agresti (2019) <i>An Introduction to Categorical Data Analysis</i>, 3rd ed.</footer>
+</main>
+</body>
+</html>
