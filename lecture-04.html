@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L04 Logistic Regression｜CDA 讀講義筆記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&family=Noto+Serif+TC:wght@700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page wide">
+
+  <!-- ===== 1. 頁首 ===== -->
+  <header class="lecture-head narrow">
+    <span class="hanko">第四講</span>
+    <div class="head-text">
+      <nav class="crumbs"><a href="../index.html">CDA 讀講義筆記</a><span>／</span><span>Lecture 04</span></nav>
+      <h1>Logistic Regression<br><span class="en">邏輯斯迴歸</span></h1>
+      <div class="lecture-meta">
+        <span class="ref"><b>講義</b> L04 p.1–25</span>
+        <span class="ref"><b>課本</b> Ch.4 p.89–112（含 §3.2）</span>
+        <span class="ref"><b>資料</b> Horseshoe Crabs、AZT</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== 2. 這講在解決什麼問題 ===== -->
+  <section class="big-picture narrow" id="big-picture">
+    <span class="label">這講在解決什麼問題</span>
+    <div class="chain">
+      <span>L02 兩個類別變數有沒有關聯</span><i>→</i>
+      <span>L03 GLM：把迴歸推廣到非常態的 Y</span><i>→</i>
+      <span class="now">L04 GLM 用在二元 Y</span><i>→</i>
+      <span>L05 模型好不好、怎麼選變數</span>
+    </div>
+    <p>L02 的列聯表一次只能看一兩個類別型 X，也放不進「殼寬 26.3 公分」這種連續變數。這講要回答的是：<strong>Y 只有 0/1 兩種結果時，怎麼讓好幾個 X（連續或類別都行）一起預測 P(Y=1)？</strong></p>
+    <p>答案是 logistic regression，也就是 L03 學過的 GLM 選定兩個零件：隨機成分用二項分配，連結函數用 logit。整講可以濃縮成三件事：<strong>為什麼是 logit</strong>、<strong>β 怎麼翻譯成人話</strong>、<strong>怎麼檢定一個變數（或一組 dummy）該不該留在模型裡</strong>。</p>
+  </section>
+
+  <!-- ===== 3. 概念地圖 ===== -->
+  <section id="map" class="narrow">
+    <h2 class="section-title">概念地圖</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>概念</th><th>它在解決什麼問題</th><th>講義</th><th>課本</th></tr></thead>
+        <tbody>
+          <tr><td class="num"><a href="#c4-1">4-1</a></td><td>為什麼取 logit</td><td>直線模型會算出小於 0 或大於 1 的機率</td><td class="num">p.1–2</td><td class="num">p.68, 89–91</td></tr>
+          <tr><td class="num"><a href="#c4-2">4-2</a></td><td>β 的兩種解讀</td><td>把 log-odds 的係數翻譯成人話</td><td class="num">p.3–4</td><td class="num">p.90–91</td></tr>
+          <tr><td class="num"><a href="#c4-3">4-3</a></td><td>對 β 做推論</td><td>效果是真的，還是抽樣誤差？</td><td class="num">p.4</td><td class="num">p.94–96</td></tr>
+          <tr><td class="num"><a href="#c4-4">4-4</a></td><td>π(x) 的信賴區間</td><td>某個 x 下的機率估計有多準</td><td class="num">p.4–5</td><td class="num">p.96–97</td></tr>
+          <tr><td class="num"><a href="#c4-5">4-5</a></td><td>鱟的例子：數字翻成人話</td><td>把 4-1 到 4-4 套到真實資料</td><td class="num">p.5–8</td><td class="num">p.91–98</td></tr>
+          <tr><td class="num"><a href="#c4-6">4-6</a></td><td>R 輸出怎麼讀</td><td>summary、confint、predict 各給了什麼</td><td class="num">p.9–11</td><td class="num">p.95–97</td></tr>
+          <tr><td class="num"><a href="#c4-7">4-7</a></td><td>類別型 X 與 dummy</td><td>怎麼把「顏色」放進方程式</td><td class="num">p.11–14</td><td class="num">p.102–104</td></tr>
+          <tr><td class="num"><a href="#c4-8">4-8</a></td><td>用 LR 檢定比較模型</td><td>一組變數要不要留？怎麼簡化？</td><td class="num">p.13–16</td><td class="num">p.104–105</td></tr>
+          <tr><td class="num"><a href="#c4-9">4-9</a></td><td>交互作用</td><td>X 的效果會不會因 Z 而不同</td><td class="num">p.17–19</td><td class="num">p.106</td></tr>
+          <tr><td class="num"><a href="#c4-10">4-10</a></td><td>Marginal effect</td><td>用「機率改變多少」摘要效果</td><td class="num">p.19–20</td><td class="num">p.107–109</td></tr>
+          <tr><td class="num"><a href="#c4-11">4-11</a></td><td>2×2×K 表的 logit 模型</td><td>把 L02 的三維表與 CMH 接到模型上</td><td class="num">p.21–22</td><td class="num">p.98–101</td></tr>
+          <tr><td class="num"><a href="#c4-12">4-12</a></td><td>預測力：分類表、ROC</td><td>模型拿來分類準不準</td><td class="num">p.22–25</td><td class="num">p.110–112</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== 4. 逐頁筆記：見開き ===== -->
+  <h2 class="section-title narrow">逐頁筆記</h2>
+
+  <!-- 見開き 1：p.1–2 -->
+  <section class="spread" id="s4-1">
+    <div class="spread-head"><span class="pages">p.1–2</span><span class="section-name">1.1 The Logistic Regression Model</span></div>
+    <div class="sheet">
+      <figure><a href="../lecture-pages/L04/p01.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p01.jpg" alt="講義 L04 第 1 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.1</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p02.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p02.jpg" alt="講義 L04 第 2 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.2</figcaption></figure>
+    </div>
+    <div class="notes">
+      <article class="concept" id="c4-1">
+        <div class="concept-head">
+          <span class="concept-id">4-1</span>
+          <h3>為什麼不用直線，而要取 logit？</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.1–2, 6</span><span class="ref"><b>課本</b> §3.2.1 p.68、§4.1 p.89–91</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>最直覺的做法是直接用一般迴歸，令 π(x) = α + βx，這叫 linear probability model（LPM）。講義 p.2 列了它的三個問題：</p>
+          <ol>
+            <li><strong>會超出 0–1</strong>：鱟的例子用 LPM，最寬的 33.5 公分會算出機率 1.3（p.6）。</li>
+            <li><strong>變異數不固定</strong>：Var(Y|x) = π(1−π) 隨 x 改變，OLS 的標準誤因此不可靠。</li>
+            <li><strong>真實關係不是直線</strong>：機率靠近 0 或 1 時應該變化得越來越慢。</li>
+          </ol>
+          <p class="analogy">機率被關在 0 到 1 的房間裡，直線遲早會撞牆。先換成 odds = π/(1−π)，天花板就打開了，範圍變成 0 到 ∞。再取 log，地板也打開了，範圍變成 −∞ 到 ∞。這時候用直線去配就不會撞牆，最後換回機率，自然就是一條 S 形曲線。</p>
+        </div>
+        <div class="formula">
+          logit[π(x)] = log <span class="frac"><span>π(x)</span><span>1 − π(x)</span></span> = α + βx
+          &nbsp;⇔&nbsp; π(x) = <span class="frac"><span>exp(α + βx)</span><span>1 + exp(α + βx)</span></span>
+          <span class="note">左式是 log-odds 尺度上的直線，右式是機率尺度上的 S 形曲線。兩邊是同一個模型，只是換了尺度。</span>
+        </div>
+        <div class="block when">
+          <span class="label">什麼時候用</span>
+          <ul>
+            <li>Y 是二元的（有／無、成功／失敗），想知道 X 怎麼影響 P(Y=1)。</li>
+            <li>Probit 模型（講義 p.2 下半）把 logit 換成 Φ⁻¹，曲線形狀幾乎一樣。課堂預設用 logit，因為 e<sup>β</sup> 可以直接解讀成 odds ratio。</li>
+            <li>LPM 只在機率都落在 0.2–0.8、不外插時勉強可用。</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 見開き 2：p.3–4 -->
+  <section class="spread" id="s4-2">
+    <div class="spread-head"><span class="pages">p.3–4</span><span class="section-name">1.2 Interpreting the Logistic Model ・ 1.3 Inference</span></div>
+    <div class="sheet">
+      <figure><a href="../lecture-pages/L04/p03.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p03.jpg" alt="講義 L04 第 3 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.3</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p04.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p04.jpg" alt="講義 L04 第 4 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.4</figcaption></figure>
+    </div>
+    <div class="notes">
+      <article class="concept" id="c4-2">
+        <div class="concept-head">
+          <span class="concept-id">4-2</span>
+          <h3>β 怎麼翻譯成人話：odds ratio 與斜率</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.3–4</span><span class="ref"><b>課本</b> p.90–91、Fig 4.1</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>β 的單位是「log-odds 增加多少」，沒有人會這樣說話。講義 p.3 給了兩種翻譯：</p>
+          <ul>
+            <li><strong>Odds ratio（給統計人）</strong>：x 增加 1，odds 乘上 e<sup>β</sup>。不論從哪個 x 開始，倍數都一樣。</li>
+            <li><strong>斜率（給非統計人）</strong>：x 增加 1，機率大約增加 βπ(x)[1−π(x)]。這個量會隨 x 改變，在 π = 0.5 時最大，等於 β/4。</li>
+          </ul>
+          <p class="analogy">S 形曲線像一座山坡：山腳和山頂幾乎是平地，半山腰（π = 0.5）最陡。機率的變化就是「高度變化」，要看你站在哪裡。odds 則像複利，每走一步都乘上同一個倍數 e<sup>β</sup>，不管站在哪裡。</p>
+        </div>
+        <div class="formula">
+          odds(x+1) / odds(x) = e<sup>β</sup> ｜ dπ/dx = βπ(x)[1 − π(x)] ｜ EL50 = −α/β
+          <span class="note">EL50 是 π = 0.5 時的 x，也是曲線最陡的地方（p.4 上方）。</span>
+        </div>
+        <div class="widget" data-widget="logit-curve" data-alpha="-12.351" data-beta="0.497" data-xmin="21" data-xmax="33.5" data-xlabel="殼寬 x（公分）"></div>
+        <p class="small">拖動殼寬：「odds 比值」一直等於 e<sup>β</sup>，但「斜率」一直在變。這就是兩種解讀的差別。</p>
+        <div class="block trap">
+          <span class="label">常見陷阱</span>
+          <ul>
+            <li><strong>e<sup>β</sup> 不是「機率的倍數」</strong>，是 odds 的倍數。機率最大是 1，不可能一直乘下去。</li>
+            <li>β/4 是斜率的<strong>上限</strong>，只在 π = 0.5 附近成立。</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="concept" id="c4-3">
+        <div class="concept-head">
+          <span class="concept-id">4-3</span>
+          <h3>對 β 做推論：Wald 和 LR</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.4</span><span class="ref"><b>課本</b> §4.2 p.94–96</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>β̂ 是從一批樣本估出來的，換一批就會不同。推論要回答兩件事：β 的合理範圍在哪裡（CI），以及有沒有證據說 β ≠ 0（檢定）。兩件事都有 Wald 和 likelihood-ratio（LR）兩種做法，這是 L01 比例推論的延伸。</p>
+          <p class="analogy">Wald 只站在山頂（β̂），看山頂附近的坡度（SE）來猜整座山的形狀。LR 則真的走下去，比較「山頂的高度」和「β = 0 那個位置的高度」差多少。山形對稱時兩者一樣；山形歪斜時，要相信 LR。</p>
+        </div>
+        <div class="formula">
+          Wald：z = β̂ / SE，CI 為 β̂ ± z<sub>α/2</sub>·SE<br>LR：2(L₁ − L₀) = Deviance₀ − Deviance₁ ~ χ²(df)
+          <span class="note">L₀、L₁ 是 H₀ 模型與完整模型的最大化 log-likelihood；df 是兩個模型的參數個數差。</span>
+        </div>
+        <div class="block debate">
+          <span class="label">學派與爭議</span>
+          <p><strong>Wald 和 LR 該信哪個？</strong>講義 p.4 的立場很明確：n 小、或配適機率大多貼近 0 或 1 時，<strong>LR 比 Wald 更有檢定力，也更可靠</strong>。Wald 的優點只是好算，軟體每一列直接印給你。課本也一直優先報 LR。極端情況下 Wald 甚至會失效，這會在 L05 的「稀疏資料」再出現。</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 見開き 3：p.5–8 -->
+  <section class="spread" id="s4-3">
+    <div class="spread-head"><span class="pages">p.5–8</span><span class="section-name">1.3.2 CI for Probabilities ・ 1.4 Horseshoe Crabs Example</span></div>
+    <div class="sheet">
+      <figure><a href="../lecture-pages/L04/p05.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p05.jpg" alt="講義 L04 第 5 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.5</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p06.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p06.jpg" alt="講義 L04 第 6 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.6</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p07.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p07.jpg" alt="講義 L04 第 7 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.7</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p08.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p08.jpg" alt="講義 L04 第 8 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.8</figcaption></figure>
+    </div>
+    <div class="notes">
+      <article class="concept" id="c4-4">
+        <div class="concept-head">
+          <span class="concept-id">4-4</span>
+          <h3>π(x) 的信賴區間：先在 logit 尺度算，再轉回來</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.4–5</span><span class="ref"><b>課本</b> §4.2.3 p.96–97</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>直接在機率尺度上用 π̂ ± 1.96·SE，端點可能跑出 0–1。所以先對<strong>線性預測值</strong> α̂ + β̂x 建 CI（它的範圍是整條實數線，常態近似比較合理），再把兩個端點丟進 logistic 函數換回機率。這跟 4-1「先換尺度再用直線」是同一個想法。</p>
+          <p>α̂ + β̂x 的變異數要用到共變異數：Var(α̂) + x²Var(β̂) + 2x·Cov(α̂, β̂)。講義 p.5 的空白處就是要你寫這條式子。</p>
+        </div>
+        <div class="block when">
+          <span class="label">什麼時候用</span>
+          <p>想回答「殼寬 26.5 公分的鱟，有跟班的機率是多少、估得多準」時使用。R 的做法見 4-6。</p>
+        </div>
+      </article>
+
+      <article class="concept" id="c4-5">
+        <div class="concept-head">
+          <span class="concept-id">4-5</span>
+          <h3>鱟的例子：把每個數字翻成人話</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.5–8</span><span class="ref"><b>課本</b> p.91–98</span></div>
+        </div>
+        <p>173 隻雌鱟，Y = 是否有雄鱟跟班（satellite），x = 殼寬（公分）。配適結果 logit[π̂(x)] = −12.351 + 0.497x。</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>講義</th><th>算什麼</th><th>結果</th><th>人話</th></tr></thead>
+            <tbody>
+              <tr><td class="num">p.6</td><td>LPM 外插</td><td class="num">1.3</td><td>直線模型在 33.5 公分算出機率 &gt; 1，這就是 4-1 的問題</td></tr>
+              <tr><td class="num">p.7</td><td>EL50</td><td class="num">24.8</td><td>殼寬 24.8 公分時，有跟班的機率剛好一半</td></tr>
+              <tr><td class="num">p.7</td><td>平均殼寬的斜率</td><td class="num">0.11</td><td>在 26.3 公分附近，每多 1 公分，機率約增加 0.11</td></tr>
+              <tr><td class="num">p.7</td><td>Odds ratio</td><td class="num">1.64</td><td>每多 1 公分，odds 變成 1.64 倍（odds 從 2.07 變 3.40）</td></tr>
+              <tr><td class="num">p.7</td><td>LR CI（OR）</td><td class="num">1.36–2.03</td><td>每多 1 公分，odds 至少增加 36%，最多約變成兩倍</td></tr>
+              <tr><td class="num">p.7–8</td><td>斜率的 CI</td><td class="num">0.08–0.18</td><td>在 EL50 附近，每多 1 公分，機率增加 0.08 到 0.18</td></tr>
+              <tr><td class="num">p.8</td><td>Wald 檢定</td><td class="num">z = 4.89</td><td>殼寬有正向效果，證據很強</td></tr>
+              <tr><td class="num">p.8</td><td>LR 檢定</td><td class="num">31.3, df=1</td><td>同上，用 deviance 差算</td></tr>
+              <tr><td class="num">p.8</td><td>π(26.5) 與 CI</td><td class="num">0.695 (0.61, 0.77)</td><td>殼寬 26.5 公分的鱟，約七成有跟班</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="block trap">
+          <span class="label">常見陷阱</span>
+          <p>斜率的 CI 是把 β 的 LR CI 乘上 0.25（因為在 π = 0.5 時斜率 = β/4），所以<strong>只在 EL50 附近成立</strong>，不能說「任何殼寬都增加 0.08–0.18」。</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 見開き 4：p.9–11 -->
+  <section class="spread" id="s4-4">
+    <div class="spread-head"><span class="pages">p.9–11</span><span class="section-name">R：LPM 與 logistic 配適</span></div>
+    <div class="sheet">
+      <figure><a href="../lecture-pages/L04/p09.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p09.jpg" alt="講義 L04 第 9 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.9</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p10.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p10.jpg" alt="講義 L04 第 10 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.10</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p11.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p11.jpg" alt="講義 L04 第 11 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.11</figcaption></figure>
+    </div>
+    <div class="notes">
+      <article class="concept" id="c4-6">
+        <div class="concept-head">
+          <span class="concept-id">4-6</span>
+          <h3>R 輸出怎麼讀：summary、confint、predict</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.9–11</span><span class="ref"><b>課本</b> p.95–97</span></div>
+        </div>
+        <div class="r-block">
+          <div class="r-title">R · summary(fit1)，fit1 = glm(y ~ width, family = binomial)</div>
+<pre>            Estimate Std. Error z value Pr(>|z|)
+(Intercept) -12.3508     2.6287  -4.698 2.62e-06
+width         <mark data-n="1">0.4972</mark>     <mark data-n="2">0.1017</mark>   <mark data-n="3">4.887</mark> 1.02e-06
+
+    Null deviance: <mark data-n="4">225.76</mark>  on 172  degrees of freedom
+Residual deviance: <mark data-n="5">194.45</mark>  on 171  degrees of freedom</pre>
+        </div>
+        <div class="block when">
+          <span class="label">R 輸出怎麼讀</span>
+          <ul class="r-read">
+            <li><b>1</b><span>β̂ = 0.497，log-odds 尺度。要變成 odds 倍數，自己算 exp(0.4972) = 1.64。</span></li>
+            <li><b>2</b><span>SE。Wald CI = 0.497 ± 1.96 × 0.102 = (0.298, 0.697)，就是 <code>confint.default(fit1)</code>。</span></li>
+            <li><b>3</b><span>z = β̂/SE，這一欄是 <strong>Wald</strong> 檢定。</span></li>
+            <li><b>4 5</b><span>Null deviance 是只有截距的模型，Residual deviance 是加了 width 的模型。相減 31.3 就是 <strong>LR 統計量</strong>，df = 172 − 171 = 1。<code>drop1(fit1, test="Chisq")</code> 會直接算出來。</span></li>
+          </ul>
+        </div>
+        <div class="r-block">
+          <div class="r-title">R · 其他常用函式</div>
+<pre>confint(fit1)            <span class="c"># LR 型 CI：width 0.308 ~ 0.709</span>
+confint.default(fit1)    <span class="c"># Wald 型 CI：width 0.298 ~ 0.697</span>
+logLik(fit1)             <span class="c"># L1 = -97.23（logLik(fit0) 為 L0 = -112.88）</span>
+
+lp &lt;- predict(fit1, data.frame(width = 26.5), se.fit = TRUE)
+plogis(lp$fit)                                  <span class="c"># 0.695</span>
+plogis(lp$fit + c(-1, 1) * 1.96 * lp$se.fit)    <span class="c"># 0.612 0.768</span></pre>
+        </div>
+        <div class="block trap">
+          <span class="label">常見陷阱</span>
+          <ul>
+            <li><code>summary()</code> 的 p 值是 Wald；<code>drop1()</code>、<code>anova()</code>、<code>car::Anova()</code> 的是 LR。兩者不同是正常的，報告時要寫清楚用哪一種。</li>
+            <li><code>confint()</code> 和 <code>confint.default()</code> 只差一個字，前者是 LR、後者是 Wald。</li>
+            <li><code>predict()</code> 預設給 logit 尺度，要用 <code>plogis()</code> 轉回機率；也可以加 <code>type = "response"</code>，但那樣就不能用 4-4 的方法算 CI。</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 見開き 5：p.11–16 -->
+  <section class="spread" id="s4-5">
+    <div class="spread-head"><span class="pages">p.12–16</span><span class="section-name">1.5 Multiple Logistic Regression</span></div>
+    <div class="sheet">
+      <figure><a href="../lecture-pages/L04/p12.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p12.jpg" alt="講義 L04 第 12 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.12</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p13.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p13.jpg" alt="講義 L04 第 13 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.13</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p14.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p14.jpg" alt="講義 L04 第 14 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.14</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p15.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p15.jpg" alt="講義 L04 第 15 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.15</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p16.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p16.jpg" alt="講義 L04 第 16 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.16</figcaption></figure>
+    </div>
+    <div class="notes">
+      <article class="concept" id="c4-7">
+        <div class="concept-head">
+          <span class="concept-id">4-7</span>
+          <h3>類別型 X：dummy 變數與參考組</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.11–14</span><span class="ref"><b>課本</b> §4.4 p.102–104、Fig 4.4</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>顏色編成 1、2、3、4 只是標籤，「深色 = 4 倍的淺色」沒有意義。所以 c 個類別要拆成 <strong>c − 1 個 0/1 的 dummy</strong>，剩下那一組全部是 0，當作<strong>參考組</strong>。每個 dummy 的係數都在回答「這一組跟參考組比差多少」。</p>
+          <p class="analogy">像匯率都以美元報價：日圓、歐元、台幣各有一個「對美元」的數字，美元自己不用報。換成以歐元報價，數字全變了，但各國貨幣的相對價值不變。</p>
+        </div>
+        <div class="formula">
+          logit[P̂(Y=1)] = −12.715 + 1.330c₁ + 1.402c₂ + 1.106c₃ + 0.468x
+          <span class="note">c₁、c₂、c₃ = medium light、medium、medium dark；dark 是參考組（p.12）。</span>
+        </div>
+        <ul>
+          <li>e<sup>1.330</sup> = 3.8：在<strong>相同殼寬</strong>下，medium light 的 odds 是 dark 的 3.8 倍（p.13）。</li>
+          <li>非參考組之間也能比：係數相減再取 exp，例如 e<sup>1.402 − 1.330</sup>。</li>
+          <li>沒有交互作用項，所以四條曲線形狀相同、只是左右平移，<strong>永遠不會交叉</strong>（p.12）。</li>
+        </ul>
+        <div class="r-block">
+          <div class="r-title">R · 把顏色變成 factor 並指定參考組（p.13）</div>
+<pre>Crabs$newcolor &lt;- factor(Crabs$color)
+Crabs$newcolor &lt;- relevel(Crabs$newcolor, ref = "4")   <span class="c"># dark 當參考組</span>
+fit2 &lt;- glm(y ~ width + newcolor, family = binomial, data = Crabs)</pre>
+        </div>
+        <div class="block when">
+          <span class="label">R 輸出怎麼讀</span>
+          <p>summary(fit2) 裡 <code>newcolor1</code> 那一列（1.3299，p = 0.12）是「medium light 對 dark」，<strong>不是</strong>「顏色整體」。要檢定顏色整體，看 4-8。</p>
+        </div>
+        <div class="block trap">
+          <span class="label">常見陷阱</span>
+          <p>沒有轉成 factor 的話，R 會把 color 當成連續的 1–4，模型就變成 4-8 的「有序分數」模型。轉換前先用 <code>is.factor()</code> 檢查。</p>
+        </div>
+      </article>
+
+      <article class="concept" id="c4-8">
+        <div class="concept-head">
+          <span class="concept-id">4-8</span>
+          <h3>用 LR 檢定比較模型：顏色到底該怎麼放？</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.13–16</span><span class="ref"><b>課本</b> p.104–105</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>一個一個看 dummy 的 Wald p 值，問的是三個不同的問題。真正想問的是「顏色整體有沒有用」，也就是 H₀: β₁ = β₂ = β₃ = 0。做法是拿<strong>有顏色</strong>和<strong>沒顏色</strong>兩個模型，比 deviance 差多少，前提是兩個模型要 nested。同一招也能用來<strong>簡化模型</strong>：換成較省參數的寫法，看 deviance 有沒有明顯變差。</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>模型</th><th>顏色的放法</th><th>Deviance</th><th>對 fit2 的 LR</th><th>p</th></tr></thead>
+            <tbody>
+              <tr><td>fit1</td><td>不放</td><td class="num">194.45</td><td class="num">6.99（df 3）</td><td class="num">0.07</td></tr>
+              <tr><td>fit2</td><td>3 個 dummy</td><td class="num">187.46</td><td colspan="2">比較基準</td></tr>
+              <tr><td>fit3</td><td>分數 1,2,3,4</td><td class="num">189.12</td><td class="num">1.66（df 2）</td><td class="num">0.44</td></tr>
+              <tr><td>fit</td><td>dark／非 dark</td><td class="num">187.96</td><td class="num">0.50（df 2）</td><td class="num">0.78</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>顏色整體只有「略有」證據（p = 0.07）；但用 1 個參數表示顏色就夠了（fit3、fit 都沒有顯著變差）。最後選 dark／非 dark：在相同殼寬下，dark 的 odds 是較淺色的 e<sup>−1.3005</sup> = 0.27 倍（p.15）。</p>
+        <div class="r-block">
+          <div class="r-title">R · anova(fit1, fit2, test = "LRT")（p.14）</div>
+<pre>  Resid. Df Resid. Dev Df Deviance Pr(>Chi)
+1       171     194.45
+2       168     187.46  <mark data-n="1">3</mark>   <mark data-n="2">6.9956</mark>  <mark data-n="3">0.07204</mark></pre>
+        </div>
+        <div class="block when">
+          <span class="label">R 輸出怎麼讀</span>
+          <ul class="r-read">
+            <li><b>1</b><span>Df = 3，是兩個模型的參數差（3 個 dummy）。</span></li>
+            <li><b>2</b><span>6.9956 = 194.45 − 187.46，就是 LR 統計量。</span></li>
+            <li><b>3</b><span>H₀ 是「簡單模型就夠」，p 大代表可以用簡單模型。<code>car::Anova(fit2)</code> 會對每個變數各做一次。</span></li>
+          </ul>
+        </div>
+        <div class="block trap">
+          <span class="label">常見陷阱</span>
+          <p>nominal 顏色 p = 0.07，有序分數顏色卻是 p = 0.02，這<strong>不矛盾</strong>。有序分數只用 1 個 df 去抓「越深越少」的趨勢，資料剛好符合，檢定力就比較高。這跟 L02 的 ordinal 檢定比 Pearson χ² 敏感是同一件事。</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 見開き 6：p.17–19 -->
+  <section class="spread" id="s4-6">
+    <div class="spread-head"><span class="pages">p.17–19</span><span class="section-name">1.5.3 Interaction</span></div>
+    <div class="sheet">
+      <figure><a href="../lecture-pages/L04/p17.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p17.jpg" alt="講義 L04 第 17 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.17</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p18.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p18.jpg" alt="講義 L04 第 18 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.18</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p19.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p19.jpg" alt="講義 L04 第 19 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.19</figcaption></figure>
+    </div>
+    <div class="notes">
+      <article class="concept" id="c4-9">
+        <div class="concept-head">
+          <span class="concept-id">4-9</span>
+          <h3>交互作用：殼寬的效果會因顏色而不同嗎？</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.17–19</span><span class="ref"><b>課本</b> p.106</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>4-7 的模型假設殼寬效果在每種顏色都一樣（曲線平行）。加上 c × x 之後，每種顏色有自己的斜率，就可以檢查這個假設。</p>
+        </div>
+        <div class="formula">
+          logit[P̂(Y=1)] = −12.812 + 6.958c + 0.522x − 0.322(c × x)
+          <span class="note">dark：−5.854 + 0.200x；較淺色：−12.812 + 0.522x；兩條曲線在 x = 21.6 交叉（p.17）。</span>
+        </div>
+        <p>LR = 187.96 − 186.79 = 1.17，df = 1，p = 0.28，交互作用證據不足。樣本斜率差很多，但 dark 只有 22 隻，標準誤很大。沒有交互作用的模型比較好解釋，所以保留簡單模型（p.18）。</p>
+        <div class="block trap">
+          <span class="label">常見陷阱</span>
+          <p>有交互作用項時，dark 的係數 6.958 是「殼寬 = 0 時」的差異，沒有實際意義。<strong>不能單獨解讀主效果</strong>，要分組寫出各自的方程式。</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 見開き 7：p.20 -->
+  <section class="spread" id="s4-7">
+    <div class="spread-head"><span class="pages">p.20</span><span class="section-name">1.6 Summarizing Effects</span></div>
+    <div class="sheet">
+      <figure><a href="../lecture-pages/L04/p20.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p20.jpg" alt="講義 L04 第 20 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.20</figcaption></figure>
+    </div>
+    <div class="notes">
+      <article class="concept" id="c4-10">
+        <div class="concept-head">
+          <span class="concept-id">4-10</span>
+          <h3>Marginal effect：用「機率」摘要效果</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.19–20</span><span class="ref"><b>課本</b> §4.5 p.107–109</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>4-2 說斜率 βπ(1−π) 會隨 x 改變，那要報哪一個？折衷做法是把<strong>每一隻鱟的斜率都算出來再取平均</strong>，叫 average marginal effect（AME）。二元變數則把每隻鱟分別設成 dark = 1 和 0，取機率差的平均，叫 discrete change。</p>
+        </div>
+        <ul>
+          <li>width 的 AME = 0.087：平均而言，殼寬每多 1 公分，機率約增加 0.087。</li>
+          <li>dark 的 discrete change = −0.26：同樣的殼寬下，dark 的機率平均少 0.26。</li>
+        </ul>
+        <div class="r-block">
+          <div class="r-title">R · 手動算 AME（講義另用 mfx、margins 套件）</div>
+<pre>p &lt;- predict(fit, type = "response")
+mean(coef(fit)["width"] * p * (1 - p))     <span class="c"># 0.0875</span></pre>
+        </div>
+        <div class="block when">
+          <span class="label">什麼時候用</span>
+          <p>要對非統計背景的人說「平均而言機率變多少」時用。odds ratio 適合跨研究比較，AME 適合說明實際影響有多大。</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 見開き 8：p.21–22 -->
+  <section class="spread" id="s4-8">
+    <div class="spread-head"><span class="pages">p.21–22</span><span class="section-name">1.7 Logistic Model with Categorical Predictors</span></div>
+    <div class="sheet">
+      <figure><a href="../lecture-pages/L04/p21.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p21.jpg" alt="講義 L04 第 21 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.21</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p22.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p22.jpg" alt="講義 L04 第 22 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.22</figcaption></figure>
+    </div>
+    <div class="notes">
+      <article class="concept" id="c4-11">
+        <div class="concept-head">
+          <span class="concept-id">4-11</span>
+          <h3>2×2×K 表的 logit 模型：接回 L02</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.21–22</span><span class="ref"><b>課本</b> §4.3 p.98–101、Ex.4.10 p.116</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>L02 處理三維表用的是 CMH 和 Breslow-Day 檢定。這裡說明它們都能改寫成 logistic 模型 logit[P(Y=1)] = α + βx + β<sub>k</sub><sup>Z</sup>，其中 e<sup>β</sup> 就是「每一層 Z 共同的 XY odds ratio」。</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>問題</th><th>L02 的工具</th><th>L04 的對應</th></tr></thead>
+            <tbody>
+              <tr><td>控制 Z 後，X 與 Y 獨立嗎？</td><td>CMH 檢定</td><td>H₀: β = 0（Wald 或 LR）</td></tr>
+              <tr><td>各層 odds ratio 相同嗎？</td><td>Breslow-Day</td><td>模型 goodness of fit（L05）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>AZT 的例子：e<sup>−0.720</sup> = 0.49。不論是哪個種族，立即使用 AZT 的人出現症狀的 odds 約只有一半（p.22）。</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- 見開き 9：p.23–25 -->
+  <section class="spread" id="s4-9">
+    <div class="spread-head"><span class="pages">p.23–25</span><span class="section-name">1.8 Summarizing Predictive Power</span></div>
+    <div class="sheet">
+      <figure><a href="../lecture-pages/L04/p23.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p23.jpg" alt="講義 L04 第 23 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.23</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p24.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p24.jpg" alt="講義 L04 第 24 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.24</figcaption></figure>
+      <figure><a href="../lecture-pages/L04/p25.jpg" target="_blank" rel="noopener"><img src="../lecture-pages/L04/p25.jpg" alt="講義 L04 第 25 頁" width="910" height="1287" decoding="async"></a><figcaption>講義 p.25</figcaption></figure>
+    </div>
+    <div class="notes">
+      <article class="concept" id="c4-12">
+        <div class="concept-head">
+          <span class="concept-id">4-12</span>
+          <h3>預測力：分類表、ROC 與 AUC</h3>
+          <div class="refs"><span class="ref"><b>講義</b> p.22–25</span><span class="ref"><b>課本</b> §4.6 p.110–112</span></div>
+        </div>
+        <div class="block why">
+          <span class="label">為什麼要這樣做</span>
+          <p>前面都在問「X 跟 Y 有沒有關係」，這裡換一個問題：<strong>拿模型來猜每隻鱟有沒有跟班，猜得準不準？</strong>做法是設門檻 π₀，π̂ &gt; π₀ 就猜 1。但門檻是人選的，所以 ROC 把<strong>所有門檻</strong>都畫出來，曲線下面積（AUC，又叫 c-index）就是不依賴門檻的總分。</p>
+          <p class="analogy">像機場安檢的敏感度旋鈕：轉得越敏感，抓到越多危險物品（sensitivity ↑），誤攔的旅客也越多（specificity ↓）。ROC 就是把旋鈕從頭轉到尾，記錄下這個取捨。</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>模型</th><th>AUC</th><th>解讀</th></tr></thead>
+            <tbody>
+              <tr><td>只有 color</td><td class="num">0.639</td><td>比亂猜（0.5）好一點</td></tr>
+              <tr><td>只有 width</td><td class="num">0.742</td><td>殼寬是主要的預測來源</td></tr>
+              <tr><td>width + color</td><td class="num">0.771</td><td>加上顏色有小幅提升</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>以 π₀ = 0.6416（樣本中 y=1 的比例）分類：sensitivity = 75/111 = 0.68，specificity = 43/62 = 0.69（p.23）。</p>
+        <div class="block trap">
+          <span class="label">常見陷阱</span>
+          <ul>
+            <li>顏色「略有證據」（4-8，p = 0.07），AUC 也只從 0.742 升到 0.771。「顯不顯著」和「預測提升多少」是兩個不同的問題。</li>
+            <li><code>plot.roc()</code> 要加 <code>legacy.axes = TRUE</code>，x 軸才是 1 − specificity，跟課本的圖一致。</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== 5. 自我檢查 ===== -->
+  <section id="quiz" class="narrow">
+    <h2 class="section-title">自我檢查</h2>
+    <div class="quiz">
+      <details>
+        <summary>Q1. 有人說「β̂ = 0.497，所以殼寬每多 1 公分，有跟班的機率增加 49.7%」，錯在哪？</summary>
+        <div class="answer"><p>兩個錯誤。β 是 log-odds 的變化，不是機率的變化；就算取 e<sup>β</sup> = 1.64，也是 odds 增加 64%，不是機率。機率的變化要用 βπ(1−π)，而且要指定在哪個 x 附近（見 4-2）。</p></div>
+      </details>
+      <details>
+        <summary>Q2. 為什麼 π(x) 的信賴區間不直接用 π̂ ± 1.96·SE？</summary>
+        <div class="answer"><p>端點可能超出 0–1，而且機率尺度上的抽樣分配不對稱。要先在 logit 尺度建 CI，再轉回機率（見 4-4）。</p></div>
+      </details>
+      <details>
+        <summary>Q3. 三個顏色 dummy 的 p 值分別是 0.12、0.01、0.06，可以說「顏色有顯著影響」嗎？</summary>
+        <div class="answer"><p>不能直接這樣說。三個 p 值各自比的是「某一色對 dark」。檢定顏色整體要用 LR 比較有無顏色的模型：6.99，df = 3，p = 0.07，只能算略有證據（見 4-8）。</p></div>
+      </details>
+      <details>
+        <summary>Q4. 什麼情況下特別該用 LR 而不是 Wald？</summary>
+        <div class="answer"><p>樣本小，或配適機率大多貼近 0 或 1 時。這時 log-likelihood 不對稱，Wald 的常態近似不可靠（見 4-3）。</p></div>
+      </details>
+    </div>
+  </section>
+
+  <nav class="pager narrow">
+    <span class="off">← L03 Generalized Linear Models（尚未建立）</span>
+    <span class="off">L05 Building and Applying Logistic Models（尚未建立）→</span>
+  </nav>
+  <footer class="site-foot narrow">個人學習筆記，解說內容以自己的話重新整理。講義原頁版權屬授課教師所有，僅在本機顯示，未公開散布。課本：Agresti (2019) <i>An Introduction to Categorical Data Analysis</i>, 3rd ed.</footer>
+</main>
+<script src="../assets/cda.js"></script>
+</body>
+</html>

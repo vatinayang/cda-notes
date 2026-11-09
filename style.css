@@ -1,0 +1,281 @@
+/* =========================================================
+   CDA 讀講義筆記 — 唯一樣式檔
+   風格：日式簡約。和紙底色、墨色文字、細線分隔、大量留白；
+   只有「講次印章」與極少數重點用朱色。
+   版面：每個「見開き（spread）」左邊是講義原頁、右邊是筆記，
+   像在講義旁邊的空白處寫筆記。手機上改為上下排列。
+   規則：所有顏色只能用下面的 token；新增 token 前先改 CLAUDE.md。
+   ========================================================= */
+
+:root {
+  /* 紙與墨 */
+  --washi: #f6f4ef;      /* 和紙：頁面底色 */
+  --kami: #fdfcf9;       /* 白紙：卡片、講義頁底 */
+  --sumi: #2b2a28;       /* 墨：正文 */
+  --usuzumi: #75726c;    /* 薄墨：次要文字 */
+  --sen: #e1ddd4;        /* 線：分隔線 */
+
+  /* 色（取自日本傳統色，降低彩度） */
+  --ai: #2f4b63;         /* 藍：主色、連結 */
+  --ai-usu: #e9edf0;
+  --shu: #b4472f;        /* 朱：印章與極少數強調 */
+
+  /* 區塊語意色（只用在對應區塊） */
+  --why: #34506b;    --why-bg: #edf0f2;    /* 藍鼠：為什麼 */
+  --when: #56704a;   --when-bg: #eef1ea;   /* 松葉：什麼時候用、R 怎麼讀 */
+  --debate: #6e5f80; --debate-bg: #f0edf2; /* 藤：學派與爭議 */
+  --trap: #9a6430;   --trap-bg: #f5eee4;   /* 黄土：常見陷阱 */
+
+  /* R 區塊 */
+  --code-bg: #2b2a28; --code-fg: #ecebe6; --code-dim: #9a968e; --code-hl: #e8b86a;
+
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+
+  --measure: 40rem;   /* 純文字頁寬 */
+  --wide: 78rem;      /* 見開き頁寬 */
+  --radius: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --washi: #1b1a18; --kami: #23221f; --sumi: #e7e4dd; --usuzumi: #a29e95; --sen: #36342f;
+    --ai: #9db9cf; --ai-usu: #26303a; --shu: #e07a62;
+    --why: #a9bfd4; --why-bg: #242b31; --when: #a9c49b; --when-bg: #252b22;
+    --debate: #c3b4d4; --debate-bg: #2b2730; --trap: #ddb07c; --trap-bg: #312a20;
+    --code-bg: #121110; --code-fg: #ecebe6; --code-dim: #8a867e; --code-hl: #e8b86a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --washi: #1b1a18; --kami: #23221f; --sumi: #e7e4dd; --usuzumi: #a29e95; --sen: #36342f;
+  --ai: #9db9cf; --ai-usu: #26303a; --shu: #e07a62;
+  --why: #a9bfd4; --why-bg: #242b31; --when: #a9c49b; --when-bg: #252b22;
+  --debate: #c3b4d4; --debate-bg: #2b2730; --trap: #ddb07c; --trap-bg: #312a20;
+  --code-bg: #121110; --code-fg: #ecebe6; --code-dim: #8a867e; --code-hl: #e8b86a;
+  color-scheme: dark;
+}
+
+/* ---------- 基礎 ---------- */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--washi);
+  color: var(--sumi);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.95;
+  letter-spacing: .02em;
+}
+.page {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding-block: 4rem 5rem;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 4rem;
+}
+.page.wide { max-width: var(--wide); }
+.page.wide > .narrow { max-width: var(--measure); width: 100%; }
+a { color: var(--ai); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible {
+  outline: 1px solid var(--ai); outline-offset: 3px;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.5; text-wrap: balance; margin: 0; letter-spacing: .06em; }
+h1 { font-size: 2.1rem; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.12rem; }
+p { margin: 0; }
+section { display: flex; flex-direction: column; gap: 1.1rem; }
+ul, ol { margin: 0; padding-left: 1.3rem; }
+li + li { margin-top: .4rem; }
+strong { font-weight: 600; }
+code { font-family: var(--font-mono); font-size: .86em; background: var(--ai-usu); padding: 0 .3em; border-radius: var(--radius); letter-spacing: 0; }
+.en { font-family: var(--font-body); font-weight: 400; color: var(--usuzumi); font-size: .78em; letter-spacing: .02em; }
+.small { font-size: .85rem; color: var(--usuzumi); }
+
+/* 區段標題：左側細線 + 小字 */
+.section-title { display: flex; align-items: baseline; gap: 1rem; }
+.section-title::after { content: ""; flex: 1; border-top: 1px solid var(--sen); transform: translateY(-.3em); }
+
+/* ---------- 頁首 ---------- */
+.crumbs { font-size: .8rem; color: var(--usuzumi); display: flex; gap: .6rem; flex-wrap: wrap; letter-spacing: .08em; }
+.crumbs a { color: var(--usuzumi); text-decoration: none; }
+.crumbs a:hover { color: var(--ai); }
+.lecture-head { display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: start; }
+.lecture-head .head-text { display: flex; flex-direction: column; gap: .8rem; min-width: 0; }
+
+/* 講次印章 */
+.hanko {
+  writing-mode: vertical-rl;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: .2em;
+  color: var(--shu); border: 1.5px solid var(--shu); border-radius: 3px;
+  padding: .55rem .3rem; line-height: 1.2;
+}
+.lecture-meta { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* 頁碼標籤 */
+.ref {
+  display: inline-flex; align-items: center; gap: .35em;
+  font-family: var(--font-mono); font-size: .72rem; line-height: 1.6; letter-spacing: .02em;
+  padding: 0 .55rem; border: 1px solid var(--sen); border-radius: var(--radius);
+  color: var(--usuzumi); background: var(--kami); white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.ref b { color: var(--ai); font-weight: 600; font-family: var(--font-body); }
+
+/* ---------- 大框架 ---------- */
+.big-picture { border-top: 1px solid var(--sumi); border-bottom: 1px solid var(--sen); padding-block: 1.5rem; display: flex; flex-direction: column; gap: .9rem; }
+.label { font-size: .74rem; letter-spacing: .18em; font-weight: 600; }
+.big-picture > .label { color: var(--shu); }
+.chain { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: .85rem; }
+.chain span { padding: .05rem .7rem; border: 1px solid var(--sen); border-radius: var(--radius); color: var(--usuzumi); background: var(--kami); }
+.chain .now { border-color: var(--ai); color: var(--ai); font-weight: 600; }
+.chain i { font-style: normal; color: var(--usuzumi); }
+
+/* ---------- 表格 ---------- */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; line-height: 1.7; }
+th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid var(--sen); vertical-align: top; }
+thead th { font-weight: 600; color: var(--usuzumi); font-size: .75rem; letter-spacing: .1em; border-bottom: 1px solid var(--sumi); white-space: nowrap; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: 0; }
+
+/* =========================================================
+   見開き：左＝講義原頁，右＝筆記
+   ========================================================= */
+.spread {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--sen);
+}
+.spread-head { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.spread-head .pages { font-family: var(--font-mono); font-size: .78rem; color: var(--shu); letter-spacing: .05em; }
+.spread-head .section-name { font-size: .82rem; color: var(--usuzumi); letter-spacing: .08em; }
+
+/* 講義原頁欄 */
+.sheet { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.sheet figure { margin: 0; display: flex; flex-direction: column; gap: .35rem; }
+.sheet img {
+  width: 100%; height: auto; display: block; background: var(--kami);
+  border: 1px solid var(--sen); box-shadow: 0 1px 0 var(--sen), 0 8px 24px -18px rgba(0,0,0,.25);
+}
+.sheet figcaption { font-family: var(--font-mono); font-size: .7rem; color: var(--usuzumi); text-align: right; letter-spacing: .05em; }
+.sheet a { display: block; }
+/* 講義圖不存在時（公開網站預設）：JS 會加上 .missing，改成一行頁碼提示 */
+.sheet figure.missing img { display: none; }
+.sheet figure.missing { flex-direction: row; }
+.sheet figure.missing figcaption { text-align: left; border: 1px dashed var(--sen); padding: .3rem .7rem; }
+.spread.no-sheet { grid-template-columns: minmax(0, 1fr); }
+.spread.no-sheet .sheet { flex-direction: row; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; }
+.spread.no-sheet .notes { max-width: var(--measure); }
+
+/* 筆記欄：左邊一條細線，像寫在講義旁的空白處 */
+.notes { display: flex; flex-direction: column; gap: 3rem; min-width: 0; border-left: 1px solid var(--sen); padding-left: 2rem; }
+.spread.no-sheet .notes { border-left: 0; padding-left: 0; }
+
+/* ---------- 概念卡 ---------- */
+.concept { display: flex; flex-direction: column; gap: 1.1rem; }
+.concept-head { display: flex; flex-direction: column; gap: .35rem; }
+.concept-head .refs { display: flex; flex-wrap: wrap; gap: .4rem; }
+.concept-id { font-family: var(--font-mono); font-size: .75rem; color: var(--shu); letter-spacing: .1em; }
+
+/* 語意區塊：左側細色線＋淡底，不用圓角卡片 */
+.block { padding: .9rem 1.1rem; display: flex; flex-direction: column; gap: .55rem; border-left: 2px solid; }
+.block.why    { background: var(--why-bg);    border-color: var(--why); }    .block.why .label    { color: var(--why); }
+.block.when   { background: var(--when-bg);   border-color: var(--when); }   .block.when .label   { color: var(--when); }
+.block.debate { background: var(--debate-bg); border-color: var(--debate); } .block.debate .label { color: var(--debate); }
+.block.trap   { background: var(--trap-bg);   border-color: var(--trap); }   .block.trap .label   { color: var(--trap); }
+.analogy { padding-top: .55rem; border-top: 1px dashed var(--sen); }
+.analogy::before { content: "類比　"; font-weight: 600; color: var(--why); letter-spacing: .1em; }
+
+/* 公式 */
+.formula {
+  font-family: var(--font-mono); font-size: .9rem; letter-spacing: 0;
+  border-top: 1px solid var(--sen); border-bottom: 1px solid var(--sen);
+  padding: .8rem .2rem; overflow-x: auto; line-height: 2.1;
+}
+.formula .note { font-family: var(--font-body); color: var(--usuzumi); font-size: .8rem; display: block; line-height: 1.7; letter-spacing: .02em; }
+.frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; line-height: 1.35; margin: 0 .15em; }
+.frac > span:first-child { border-bottom: 1px solid currentColor; padding: 0 .2em; }
+
+/* R 程式與輸出 */
+.r-block { display: flex; flex-direction: column; }
+.r-block .r-title { background: var(--code-bg); color: var(--code-dim); font-family: var(--font-mono); font-size: .68rem; padding: .55rem 1rem 0; letter-spacing: .08em; }
+.r-block pre {
+  margin: 0; background: var(--code-bg); color: var(--code-fg);
+  font-family: var(--font-mono); font-size: .76rem; line-height: 1.7; letter-spacing: 0;
+  padding: .7rem 1rem 1rem; overflow-x: auto;
+}
+.r-block .c { color: var(--code-dim); }
+.r-block mark { background: transparent; color: var(--code-hl); font-weight: 600; }
+.r-block mark[data-n]::after { content: attr(data-n); font-size: .7em; vertical-align: super; margin-left: .1em; }
+.r-read { list-style: none; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.r-read li { margin: 0; display: grid; grid-template-columns: 1.6rem 1fr; gap: .3rem; }
+.r-read li > b { font-family: var(--font-mono); color: var(--when); }
+.r-read li > span { min-width: 0; }
+
+/* 自我檢查 */
+.quiz { display: flex; flex-direction: column; border-top: 1px solid var(--sumi); }
+.quiz details { border-bottom: 1px solid var(--sen); padding: .9rem .2rem; }
+.quiz summary { cursor: pointer; font-weight: 600; list-style: none; display: grid; grid-template-columns: 1fr auto; gap: 1rem; }
+.quiz summary::-webkit-details-marker { display: none; }
+.quiz summary::after { content: "答"; font-family: var(--font-display); color: var(--shu); font-size: .85rem; }
+.quiz details[open] summary::after { content: "閉"; color: var(--usuzumi); }
+.quiz details[open] summary { margin-bottom: .6rem; }
+.quiz .answer { display: flex; flex-direction: column; gap: .5rem; color: var(--sumi); padding-left: 1rem; border-left: 1px solid var(--shu); }
+
+/* 互動圖 */
+.widget { border: 1px solid var(--sen); background: var(--kami); padding: 1rem; display: flex; flex-direction: column; gap: .8rem; }
+.widget svg { width: 100%; height: auto; display: block; }
+.widget .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .6rem 1rem; font-size: .82rem; }
+.widget label { display: flex; flex-direction: column; gap: .1rem; }
+.widget input[type=range] { width: 100%; accent-color: var(--ai); }
+.widget .readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: .5rem; font-size: .76rem; color: var(--usuzumi); }
+.widget .readout div { border-top: 1px solid var(--sen); padding-top: .3rem; }
+.widget .readout b { display: block; font-family: var(--font-mono); font-size: .92rem; font-variant-numeric: tabular-nums; color: var(--sumi); font-weight: 600; letter-spacing: 0; }
+
+/* ---------- 首頁 ---------- */
+.hero { display: flex; flex-direction: column; gap: 1.4rem; }
+.hero .kicker { font-size: .78rem; letter-spacing: .25em; color: var(--usuzumi); }
+.hero h1 { font-size: 2.6rem; letter-spacing: .12em; }
+.hero p { color: var(--usuzumi); }
+.lecture-list { list-style: none; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--sumi); }
+.lecture-list li { margin: 0; border-bottom: 1px solid var(--sen); }
+.lecture-list a, .lecture-list .disabled {
+  display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; align-items: baseline;
+  padding: 1.2rem .25rem; text-decoration: none; color: var(--sumi);
+}
+.lecture-list a:hover .t > span:first-child { color: var(--ai); }
+.lecture-list .disabled { color: var(--usuzumi); }
+.lecture-list .no { font-family: var(--font-display); font-weight: 700; color: var(--shu); letter-spacing: .1em; }
+.lecture-list .disabled .no { color: var(--usuzumi); }
+.lecture-list .t { min-width: 0; display: flex; flex-direction: column; font-family: var(--font-display); font-weight: 700; letter-spacing: .04em; }
+.lecture-list .t small { font-family: var(--font-body); font-weight: 400; color: var(--usuzumi); font-size: .8rem; letter-spacing: .02em; }
+.status { font-size: .72rem; letter-spacing: .1em; white-space: nowrap; color: var(--usuzumi); }
+.status.done { color: var(--shu); }
+.status.done::before { content: "● "; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .8rem; }
+
+/* 上下頁、頁尾 */
+.pager { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-top: 1px solid var(--sumi); padding-top: 1.25rem; font-size: .88rem; }
+.pager .off { color: var(--usuzumi); }
+.site-foot { font-size: .75rem; color: var(--usuzumi); line-height: 1.8; }
+
+/* ---------- 響應式 ---------- */
+@media (max-width: 900px) {
+  .spread { grid-template-columns: minmax(0, 1fr); }
+  .notes { border-left: 0; padding-left: 0; }
+  .sheet { margin-bottom: 2rem; }
+}
+@media (max-width: 480px) {
+  .page { padding-block: 2.5rem 4rem; gap: 3rem; }
+  h1 { font-size: 1.65rem; }
+  .hero h1 { font-size: 2rem; }
+  .lecture-list a, .lecture-list .disabled { grid-template-columns: 3.2rem 1fr; }
+  .lecture-list .status { grid-column: 2; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
